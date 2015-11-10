@@ -1,19 +1,16 @@
-# AANGEPAST VOOR MAC (Voeg -lrt flag toe bij LFLAGS voor linux)
+PROGNAME = assign1_2
+SRCFILES = assign1_2.c file.c timer.c simulate.c
+TARNAME = assign1_2.tgz
 
-PROGNAME = assign1_1
-SRCFILES = assign1_1.c file.c timer.c simulate.c
-TARNAME = assign1_1.tgz
-
-# i_max t_max num_threads
-RUNARGS = 1000000 1000 1
+RUNARGS = 1000 1000 1 # i_max t_max num_threads, increase this when testing on the DAS4!
 
 IMAGEVIEW = display
 CC = gcc
 
 WARNFLAGS = -Wall -Werror-implicit-function-declaration -Wshadow \
 		  -Wstrict-prototypes -pedantic-errors
-CFLAGS = -std=c99 -ggdb -O2 $(WARNFLAGS) -D_POSIX_C_SOURCE=200112
-LFLAGS = -lm -lpthread
+CFLAGS = -std=c99 -ggdb -O2 $(WARNFLAGS) -D_POSIX_C_SOURCE=200112 -fopenmp
+LFLAGS = -lm -lrt
 
 # Do some substitution to get a list of .o files from the given .c files.
 OBJFILES = $(patsubst %.c,%.o,$(SRCFILES))
@@ -38,15 +35,8 @@ plot: result.txt
 	gnuplot plot.gnp
 	$(IMAGEVIEW) plot.png
 
-todo:
-	-@for file in *.c *.h; do \
-		grep -FHnT -e TODO $$file | \
-			sed 's/:[ \t]*\/\//: \/\//' | \
-			sed 's/:[ \t]*\/\*/: \/\*/'; \
-		done; true
-
 dist:
 	tar cvzf $(TARNAME) Makefile *.c *.h data/
 
 clean:
-	rm -fv $(PROGNAME) $(OBJFILES) $(TARNAME)
+	rm -fv $(PROGNAME) $(OBJFILES) $(TARNAME) result.txt plot.png
