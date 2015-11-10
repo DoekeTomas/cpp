@@ -1,12 +1,18 @@
 /*
+ * Name: Doeke Leeuwis
+ * Studentnr: 10723692
+ * Studie: Informatica
+ * 
  * simulate.c
  *
- * Implement your (parallel) simulation here!
+ * Wave equation simulation with PThreads
+ *
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "omp.h"
 #include "simulate.h"
 
 
@@ -25,9 +31,25 @@
 double *simulate(const int i_max, const int t_max, const int num_threads,
         double *old_array, double *current_array, double *next_array)
 {
-    /*
-     * Your implementation should go here.
-     */
+    int t, i;
+	double *tmp_array;
 
-    return current_array;
+    /* Simulate t_max timesteps */
+	for (t = 0; t < t_max; t++) {
+
+	    for (i = 1; i < i_max - 1; i++) {
+
+			/* Wave equation */
+			next_array[i] = (2 * current_array[i]) - old_array[i];
+			next_array[i] += 0.15 * (current_array[i-1] - ((2 * current_array[i]) - current_array[i+1]));
+		}
+
+		/* Swap the buffers around */
+		tmp_array = old_array;
+		old_array = current_array;
+		current_array = next_array;
+		next_array = tmp_array;
+	}
+
+	return current_array;
 }
