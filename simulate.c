@@ -15,11 +15,8 @@
 #include "omp.h"
 #include "simulate.h"
 
-
 /*
  * Executes the entire simulation.
- *
- * Implement your code here.
  *
  * i_max: how many data points are on a single wave
  * t_max: how many iterations the simulation should run
@@ -34,9 +31,14 @@ double *simulate(const int i_max, const int t_max, const int num_threads,
     int t, i;
 	double *tmp_array;
 
+	/* Set max number of threads */
+	omp_set_num_threads(num_threads);
+
     /* Simulate t_max timesteps */
 	for (t = 0; t < t_max; t++) {
 
+		/* Parallelise the wave equation */
+		#pragma omp parallel for
 	    for (i = 1; i < i_max - 1; i++) {
 
 			/* Wave equation */
