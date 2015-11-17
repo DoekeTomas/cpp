@@ -1,15 +1,19 @@
-PROGNAME = assign1_2
-SRCFILES = assign1_2.c file.c timer.c simulate.c
-TARNAME = assign1_2.tgz
+PROGNAME = assign2_1
+SRCFILES = assign2_1.c file.c timer.c simulate.c
+TARNAME = assign2_1.tgz
 
-RUNARGS = 1000 1000 1 # i_max t_max num_threads, increase this when testing on the DAS4!
+RUNARGS = 1000 1000 # i_max t_max, increase this when testing on the DAS4!
+NODES = 1 # How many DAS4 nodes
+PROCESSESPERNODE = 1 # How many processes to spawn on one machine.
 
+PRUNARGS = -v -np $(NODES) -$(PROCESSESPERNODE) \
+		   -sge-script $$PRUN_ETC/prun-openmpi
 IMAGEVIEW = display
-CC = gcc
+CC = mpicc
 
 WARNFLAGS = -Wall -Werror-implicit-function-declaration -Wshadow \
 		  -Wstrict-prototypes -pedantic-errors
-CFLAGS = -std=c99 -ggdb -O2 $(WARNFLAGS) -D_POSIX_C_SOURCE=200112 -fopenmp
+CFLAGS = -std=c99 -ggdb -O2 $(WARNFLAGS) -D_POSIX_C_SOURCE=200112
 LFLAGS = -lm -lrt
 
 # Do some substitution to get a list of .o files from the given .c files.
@@ -26,10 +30,10 @@ $(PROGNAME): $(OBJFILES)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 run: $(PROGNAME)
-	prun -v -np 1 $(PROGNAME) $(RUNARGS)
+	prun $(PRUNARGS) $(PROGNAME) $(RUNARGS)
 
 runlocal: $(PROGNAME)
-	./$(PROGNAME) $(RUNARGS)
+	mpirun -n $(PROCESSESPERNODE) $(PROGNAME) $(RUNARGS)
 
 plot: result.txt
 	gnuplot plot.gnp

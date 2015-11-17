@@ -1,9 +1,7 @@
 /*
- * assign2_1.c
+ * assign3_1.c
  *
  * Contains code for setting up and finishing the simulation.
- * NOTE: YOU SHOULD IMPLEMENT NOT HAVE TO LOOK HERE, IMPLEMENT YOUR CODE IN
- *       simulate.c.
  */
 
 #include <stdio.h>
@@ -51,11 +49,11 @@ void fill(double *array, int offset, int range, double sample_start,
 int main(int argc, char *argv[])
 {
     double *old, *current, *next, *ret;
-    int t_max, i_max, num_threads;
+    int t_max, i_max;
     double time;
 
-    /* Parse commandline args: i_max t_max num_threads */
-    if (argc < 4) {
+    /* Parse commandline args */
+    if (argc < 3) {
         printf("Usage: %s i_max t_max num_threads [initial_data]\n", argv[0]);
         printf(" - i_max: number of discrete amplitude points, should be >2\n");
         printf(" - t_max: number of discrete timesteps, should be >=1\n");
@@ -75,7 +73,6 @@ int main(int argc, char *argv[])
 
     i_max = atoi(argv[1]);
     t_max = atoi(argv[2]);
-    num_threads = atoi(argv[3]);
 
     if (i_max < 3) {
         printf("argument error: i_max should be >2.\n");
@@ -83,10 +80,6 @@ int main(int argc, char *argv[])
     }
     if (t_max < 1) {
         printf("argument error: t_max should be >=1.\n");
-        return EXIT_FAILURE;
-    }
-    if (num_threads < 1) {
-        printf("argument error: num_threads should be >=1.\n");
         return EXIT_FAILURE;
     }
 
@@ -104,26 +97,28 @@ int main(int argc, char *argv[])
     memset(current, 0, i_max * sizeof(double));
     memset(next, 0, i_max * sizeof(double));
 
-    /* How should we will our first two generations? */
-    if (argc > 4) {
-        if (strcmp(argv[4], "sin") == 0) {
+    /* How should we will our first two generations? This is determined by the
+     * optional further commandline arguments.
+     * */
+    if (argc > 3) {
+        if (strcmp(argv[3], "sin") == 0) {
             fill(old, 1, i_max/4, 0, 2*3.14, sin);
             fill(current, 2, i_max/4, 0, 2*3.14, sin);
-        } else if (strcmp(argv[4], "sinfull") == 0) {
+        } else if (strcmp(argv[3], "sinfull") == 0) {
             fill(old, 1, i_max-2, 0, 10*3.14, sin);
             fill(current, 2, i_max-3, 0, 10*3.14, sin);
-        } else if (strcmp(argv[4], "gauss") == 0) {
+        } else if (strcmp(argv[3], "gauss") == 0) {
             fill(old, 1, i_max/4, -3, 3, gauss);
             fill(current, 2, i_max/4, -3, 3, gauss);
-        } else if (strcmp(argv[4], "file") == 0) {
-            if (argc < 7) {
+        } else if (strcmp(argv[3], "file") == 0) {
+            if (argc < 6) {
                 printf("No files specified!\n");
                 return EXIT_FAILURE;
             }
-            file_read_double_array(argv[5], old, i_max);
-            file_read_double_array(argv[6], current, i_max);
+            file_read_double_array(argv[4], old, i_max);
+            file_read_double_array(argv[5], current, i_max);
         } else {
-            printf("Unknown initial mode: %s.\n", argv[4]);
+            printf("Unknown initial mode: %s.\n", argv[3]);
             return EXIT_FAILURE;
         }
     } else {
@@ -132,11 +127,10 @@ int main(int argc, char *argv[])
         fill(current, 2, i_max/4, 0, 2*3.14, sin);
     }
 
-
     timer_start();
 
     /* Call the actual simulation that should be implemented in simulate.c. */
-    ret = simulate(i_max, t_max, num_threads, old, current, next);
+    ret = simulate(i_max, t_max, old, current, next);
 
     time = timer_end();
     printf("Took %g seconds\n", time);
